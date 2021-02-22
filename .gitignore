@@ -1,3 +1,6 @@
+# JetBrains IDEs
+.idea
+
 devel/
 logs/
 build/
@@ -37,6 +40,7 @@ srv/_*.py
 *.pyc
 qtcreator-*
 *.user
+venv/
 
 /planning/cfg
 /planning/docs
