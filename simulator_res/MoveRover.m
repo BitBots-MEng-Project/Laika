@@ -6,66 +6,48 @@ if (clientID>-1) %If the client ID is greater than -1, then the connection is su
     disp('connected')
     
     %Handles
-    [returnCode, Left_Motor]=sim.simxGetObjectHandle(clientID,'Pioneer_p3dx_leftMotor', sim.simx_opmode_blocking); %left motor handle
+    [returnCode, Robot_position]=sim.simxGetObjectHandle(clientID,'Pioneer_p3dx',sim.simx_opmode_blocking);          %robot handle
+    [returnCode, Left_Motor]=sim.simxGetObjectHandle(clientID,'Pioneer_p3dx_leftMotor', sim.simx_opmode_blocking);   %left motor handle
     [returnCode, Right_Motor]=sim.simxGetObjectHandle(clientID,'Pioneer_p3dx_rightMotor', sim.simx_opmode_blocking); %right motor handle
-    [returnCode, Lidar]=sim.simxGetObjectHandle(clientID,'Lidar', sim.simx_opmode_blocking); %lidar handle
-    %[returnCode, Odometry]=sim.simxCreateDummy(clientID,0.01,[],sim.simx_opmode_blocking) %dummy handle
-    [returnCode,Robot_position]=sim.simxGetObjectHandle(clientID,'Pioneer_p3dx',sim.simx_opmode_blocking); %robot handle
+    [returnCode, Lidar]=sim.simxGetObjectHandle(clientID,'Lidar', sim.simx_opmode_blocking);                         %lidar handle
+    [returnCode,Centre_Point]=sim.simxGetObjectHandle(clientID,'Odometry',sim.simx_opmode_blocking);                 %Centre_Point handle
+
     
-    retreating = 0;
-   
+    
+    
+    %Setting stuff
+    Reverse_Mode = 0; %Robot is not reversing
     [returnCode]=sim.simxSetJointTargetVelocity(clientID,Left_Motor,5,sim.simx_opmode_blocking); %spin left motor at 5 deg/s
-    [returnCode]=sim.simxSetJointTargetVelocity(clientID,Right_Motor,5,sim.simx_opmode_blocking); %spin right motor at 5 deg/s
+    [returnCode]=sim.simxSetJointTargetVelocity(clientID,Right_Motor,5,sim.simx_opmode_blocking);%spin right motor at 5 deg/s
     
+    
+ 
+    %Doing stuff
     while (true) 
         
-  
-    [returnCode,detectionState,detectedPoint,~,~]=sim.simxReadProximitySensor(clientID,Lidar,sim.simx_opmode_streaming); %read LIDAR
-       
-            if (detectionState==1) && (norm(detectedPoint) < 0.4) && (retreating==0)
-             
-                disp(norm(detectedPoint))
-                retreating = 1;
-                
-                for i= 1:50
-                [returnCode]=sim.simxSetJointTargetVelocity(clientID,Left_Motor,-5,sim.simx_opmode_blocking); 
-                [returnCode]=sim.simxSetJointTargetVelocity(clientID,Right_Motor,-5,sim.simx_opmode_blocking);
-                
-                 pause(0.1); %A command will be executed every 0.1 seconds 
-                end 
-                 
-            end
-            
-            retreating = 0;
-           
-            
-            disp(norm(detectedPoint))
-%                                 
-
-                       [returnCode]=sim.simxSetJointTargetVelocity(clientID,Left_Motor,0,sim.simx_opmode_blocking); %Turn off left actuator
-                       [returnCode]=sim.simxSetJointTargetVelocity(clientID,Right_Motor,0,sim.simx_opmode_blocking); %Turn off right actuator
-                        sim.simxFinish(-1); %Close any unopened connections 
-                            end
-            
-%         elseif (retreating == 1)
-%             [returnCode]=sim.simxSetJointTargetVelocity(clientID,Left_Motor,0,sim.simx_opmode_blocking); %Turn off left actuator
-%             [returnCode]=sim.simxSetJointTargetVelocity(clientID,Right_Motor,0,sim.simx_opmode_blocking); %Turn off right actuator
-            end
+    [returnCode,position]=sim.simxGetObjectPosition(clientID,Robot_position,Centre_Point, sim.simx_opmode_streaming); %get position of robot with respect to the Centre_Position
+    disp(position)
     
-        
-        if (detectionState==0) && (retreating==1)
-            retreating =0;
-        end
-        
-        %imshow(image)
-%         disp(norm(detectedPoint));
-        pause(0.1); %A command will be executed every 0.1 seconds 
-     
-        
-    
-%    [returnCode]=sim.simxSetJointTargetVelocity(clientID,Left_Motor,0,sim.simx_opmode_blocking); %Turn off left actuator
-%    [returnCode]=sim.simxSetJointTargetVelocity(clientID,Right_Motor,0,sim.simx_opmode_blocking); %Turn off right actuator
-%     sim.simxFinish(-1); %Close any unopened connections 
+    [returnCode,detectionState,detectedPoint,~,~]=sim.simxReadProximitySensor(clientID,Lidar,sim.simx_opmode_streaming); %read LIDAR    
+      
+        if (detectionState==1) && (norm(detectedPoint) < 0.4) && (Reverse_Mode == 0) %if Lidar is detecting something less than 0.4m away and the robot is not reversing 
+        disp(norm(detectedPoint))
+        [returnCode]=sim.simxSetJointTargetVelocity(clientID,Left_Motor,0,sim.simx_opmode_blocking); %Turn off left actuator
+        [returnCode]=sim.simxSetJointTargetVelocity(clientID,Right_Motor,0,sim.simx_opmode_blocking); %Turn off right actuator
+        pause(0.1)
+        [returnCode]=sim.simxSetJointTargetVelocity(clientID,Left_Motor,-5,sim.simx_opmode_blocking); %spin left motor at -5 deg/s
+        [returnCode]=sim.simxSetJointTargetVelocity(clientID,Right_Motor,-5,sim.simx_opmode_blocking);%spin right motor at -5 deg/s
+        Reverse_Mode = 1; %Reverse          
 
+          elseif (detectionState==1) && (norm(detectedPoint) > 0.8) && (Reverse_Mode == 1) %if Lidar is detecting somethingS more than 0.8m away and the robot is reversing
+          disp(norm(detectedPoint))
+          [returnCode]=sim.simxSetJointTargetVelocity(clientID,Left_Motor,0,sim.simx_opmode_blocking); %Turn off left actuator
+          [returnCode]=sim.simxSetJointTargetVelocity(clientID,Right_Motor,0,sim.simx_opmode_blocking); %Turn off right actuator
+          break;
+        end 
+    end 
+end 
+
+sim.simxFinish(-1); %Close any unopened connections 
 
 sim.delete();
