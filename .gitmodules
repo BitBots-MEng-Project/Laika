@@ -1,0 +1,3 @@
+[submodule "laika_ros_ws/src/rplidar_ros"]
+	path = laika_ros_ws/src/rplidar_ros
+	url = https://github.com/robopeak/rplidar_ros.git
