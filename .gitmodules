@@ -1,3 +1,9 @@
 [submodule "laika_ros_ws/src/rplidar_ros"]
 	path = laika_ros_ws/src/rplidar_ros
 	url = https://github.com/robopeak/rplidar_ros.git
+[submodule "laika_ros_ws/src/simExtROS"]
+	path = laika_ros_ws/src/simExtROS
+	url = https://github.com/CoppeliaRobotics/simExtROS.git
+[submodule "laika_ros_ws/src/ros_bubble_rob"]
+	path = laika_ros_ws/src/ros_bubble_rob
+	url = https://github.com/CoppeliaRobotics/ros_bubble_rob.git
