@@ -7,3 +7,6 @@
 [submodule "laika_ros_ws/src/ros_bubble_rob"]
 	path = laika_ros_ws/src/ros_bubble_rob
 	url = https://github.com/CoppeliaRobotics/ros_bubble_rob.git
+[submodule "laika_ros_ws/src/ros_imu_bno055"]
+	path = laika_ros_ws/src/ros_imu_bno055
+	url = https://github.com/RoboticArts/ros_imu_bno055.git
